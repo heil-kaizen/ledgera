@@ -156,6 +156,17 @@ export default function AdminDashboard() {
     }
   };
 
+  const deleteWallet = async (walletId: string) => {
+    if (!selectedApp) return;
+    const { error } = await supabase.from('charity_wallets').delete().eq('id', walletId);
+    if (error) {
+      toast.error("Failed to remove wallet: " + error.message);
+    } else {
+      toast.success("Wallet removed");
+      fetchWallets(selectedApp.id);
+    }
+  };
+
   const handlePayoutSubmit = async () => {
     if (!selectedWalletId || !payoutAmountUsd || !payoutTxHash || !payoutDescription) {
         toast.error("Please fill in all required fields.");
@@ -378,8 +389,14 @@ export default function AdminDashboard() {
                     </Button>
                   )}
                   {selectedApp.status === 'archived' && (
-                     <div className="w-full py-3 text-center text-sm font-semibold text-gray-500 bg-gray-50 rounded-2xl border border-gray-100">
-                        This application is archived
+                     <div className="w-full flex gap-4">
+                        <Button 
+                          variant="outline" 
+                          className="w-full rounded-2xl h-14 border-gray-200 text-gray-600 hover:bg-gray-50"
+                          onClick={() => updateStatus(selectedApp.id, 'approved')}
+                        >
+                          Unarchive Project
+                        </Button>
                      </div>
                   )}
                 </div>
@@ -391,6 +408,23 @@ export default function AdminDashboard() {
                        <Wallet className="h-5 w-5" /> Wallet Infrastructure
                     </h3>
                     
+                    {wallets.length > 0 && (
+                      <div className="space-y-2 mb-6">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-charity-dark/60 mb-2">Assigned Wallets</h4>
+                        {wallets.map(w => (
+                          <div key={w.id} className="flex justify-between items-center text-sm bg-white border border-charity-muted px-4 py-3 rounded-xl">
+                            <span className="font-mono text-gray-600 truncate mr-4">{w.address}</span>
+                            <button 
+                              onClick={() => deleteWallet(w.id)}
+                              className="text-red-500 hover:text-red-700 font-semibold uppercase text-xs tracking-wider shrink-0"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div className="bg-charity-light/50 border border-charity-accent/30 rounded-xl px-4 py-3 text-gray-500 font-semibold text-center cursor-not-allowed">
                         Solana
