@@ -6,6 +6,7 @@ import { ArrowUpRight, Heart, HeartHandshake, ShieldCheck, Link2, FileCheck } fr
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export default function Home() {
+  const [session, setSession] = useState<any>(null);
   const [stats, setStats] = useState({
     approvedCharities: 0,
     totalDistributed: 0,
@@ -13,6 +14,18 @@ export default function Home() {
     latestPayoutDesc: "No payouts yet",
     walletsCount: 0
   });
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -74,7 +87,7 @@ export default function Home() {
             A public transparency layer for crypto-powered charity funding.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <RouterLink to="/apply">
+            <RouterLink to={session ? "/apply" : "/login"}>
               <Button variant="dark" className="rounded-full px-8 py-6 text-base font-medium">Donate now</Button>
             </RouterLink>
           </div>
@@ -85,7 +98,7 @@ export default function Home() {
           <div className="flex flex-col md:grid md:grid-cols-4 md:grid-rows-3 gap-4 md:gap-5 flex-grow mb-16 pt-8">
 
             {/* 1. Stat Card */}
-            <BentoCard to="/apply" variant="dark" className="md:row-span-2 flex flex-col justify-between overflow-hidden relative min-h-[380px] group cursor-pointer hover:opacity-95 transition-opacity">
+            <BentoCard to={session ? "/apply" : "/login"} variant="dark" className="md:row-span-2 flex flex-col justify-between overflow-hidden relative min-h-[380px] group cursor-pointer hover:opacity-95 transition-opacity">
               {/* Background pattern suggestion */}
               <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,1) 10px, rgba(255,255,255,1) 11px)' }}></div>
               
