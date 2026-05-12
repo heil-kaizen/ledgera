@@ -70,7 +70,10 @@ export default function AdminDashboard() {
           .single();
 
         if (!adminRecord) {
-          toast.error("Access denied. Admin privileges required.");
+          toast.error("Access denied. Admin privileges required.", {
+            closeButton: true,
+            duration: 3000
+          });
           navigate("/");
           return;
         }
