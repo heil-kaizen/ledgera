@@ -13,7 +13,15 @@ const ACCEPTED_DOC_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 
 const applySchema = z.object({
   charity_name: z.string().min(2, "Charity name is required"),
-  website: z.string().url("Valid URL required").or(z.literal("")),
+  website: z.string()
+    .transform((val) => {
+      if (!val) return "";
+      if (!/^https?:\/\//i.test(val)) {
+        return `https://${val}`;
+      }
+      return val;
+    })
+    .pipe(z.string().url().or(z.literal(""))),
   contact_email: z.string().email("Valid contact email required"),
   description: z.string().min(20, "Tell us more about your mission (min 20 chars)"),
 });
@@ -121,7 +129,7 @@ export default function Apply() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Charity Name */}
-            <div className="space-y-2">
+            <div className="space-y-2" id="orgName">
               <label className="text-sm font-semibold text-charity-darker ml-1">Charity Name</label>
               <input
                 {...register("charity_name")}
@@ -132,7 +140,7 @@ export default function Apply() {
             </div>
 
             {/* Contact Email */}
-            <div className="space-y-2">
+            <div className="space-y-2" id="orgEmail">
               <label className="text-sm font-semibold text-charity-darker ml-1">Contact Email</label>
               <input
                 {...register("contact_email")}
@@ -145,7 +153,7 @@ export default function Apply() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Website */}
-            <div className="space-y-2">
+            <div className="space-y-2" id="orgSite">
               <label className="text-sm font-semibold text-charity-darker ml-1">Organization Website</label>
               <input
                 {...register("website")}
@@ -181,13 +189,13 @@ export default function Apply() {
                     id="logo-upload" 
                     hidden 
                     accept="image/*"
-                    onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLogoFile(e.target.files?.[0] || null)}
                    />
                    {logoFile ? (
                       <>
                         <CheckCircle2 className="h-10 w-10 text-charity-dark mb-2" />
                         <span className="text-sm font-medium text-charity-dark">{logoFile.name}</span>
-                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setLogoFile(null); }} className="mt-2">Change</Button>
+                        <Button variant="ghost" size="sm" onClick={(e: { stopPropagation: () => void; }) => { e.stopPropagation(); setLogoFile(null); }} className="mt-2">Change</Button>
                       </>
                    ) : (
                       <>
