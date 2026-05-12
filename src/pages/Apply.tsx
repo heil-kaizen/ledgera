@@ -181,13 +181,13 @@ export default function Apply() {
                     id="logo-upload" 
                     hidden 
                     accept="image/*"
-                    onChange={(e) => setLogoFile(e.target.files?.[0] || null)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLogoFile(e.target.files?.[0] || null)}
                    />
                    {logoFile ? (
                       <>
                         <CheckCircle2 className="h-10 w-10 text-charity-dark mb-2" />
                         <span className="text-sm font-medium text-charity-dark">{logoFile.name}</span>
-                        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setLogoFile(null); }} className="mt-2">Change</Button>
+                        <Button variant="ghost" size="sm" onClick={(e: { stopPropagation: () => void; }) => { e.stopPropagation(); setLogoFile(null); }} className="mt-2">Change</Button>
                       </>
                    ) : (
                       <>
