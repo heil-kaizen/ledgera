@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { Menu, Heart, ShieldCheck } from "lucide-react";
+import { Menu, X, ShieldCheck } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 export function Header() {
   const [session, setSession] = useState<any>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -29,8 +30,10 @@ export function Header() {
         : "text-charity-dark/50 hover:text-charity-dark"
     );
 
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   return (
-    <header className="py-6 px-4 md:px-8 w-full z-50 sticky top-0 flex items-center justify-between mb-10">
+    <header className="py-6 px-4 md:px-8 w-full z-50 sticky top-0 flex items-center justify-between mb-10 bg-white/80 backdrop-blur-md">
         
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
@@ -76,9 +79,51 @@ export function Header() {
         </div>
         
         {/* Mobile Nav Trigger */}
-        <Button variant="ghost" size="icon" className="md:hidden text-charity-dark">
-            <Menu className="h-6 w-6" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="md:hidden text-charity-dark"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        >
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </Button>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="absolute top-[80px] left-0 w-full bg-white border-b border-charity-darker/10 shadow-lg md:hidden flex flex-col p-6 gap-6">
+            <Link to="/" onClick={closeMobileMenu} className={navLinkClass("/")}>Home</Link>
+            <Link to="/apply" onClick={closeMobileMenu} className={navLinkClass("/apply")}>Apply</Link>
+            {session && (
+              <Link to="/admin" onClick={closeMobileMenu} className={cn(navLinkClass("/admin"), "flex items-center gap-1.5")}>
+                <ShieldCheck className="h-4 w-4" /> Admin
+              </Link>
+            )}
+            <Link to="/about" onClick={closeMobileMenu} className={navLinkClass("/about")}>About</Link>
+            <Link to="/transparency" onClick={closeMobileMenu} className={navLinkClass("/transparency")}>Transparency</Link>
+            
+            <hr className="border-charity-darker/10" />
+            
+            <div className="flex flex-col gap-4">
+              {session ? (
+                <>
+                  <Link to="/dashboard" onClick={closeMobileMenu} className="bg-charity-dark text-white px-6 py-3 rounded-full text-sm font-semibold text-center">Dashboard</Link>
+                  <button 
+                    onClick={async () => {
+                      closeMobileMenu();
+                      await supabase.auth.signOut();
+                      window.location.href = '/';
+                    }} 
+                    className="text-charity-dark px-4 py-3 rounded-full text-sm font-semibold text-center border border-charity-dark/20"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" onClick={closeMobileMenu} className="bg-charity-dark text-white px-6 py-3 rounded-full text-sm font-semibold text-center">Login</Link>
+              )}
+            </div>
+          </div>
+        )}
     </header>
   );
 }
